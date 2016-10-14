@@ -1,7 +1,8 @@
-import Html exposing (Html, button, div, text)
+import Html exposing (..)
 import Html.App as Html
-import Html.Events exposing (onClick)
-
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import String
 
 
 main =
@@ -11,37 +12,45 @@ main =
     , update = update
     }
 
-
+toDefaultInt: Int -> String -> Int
+toDefaultInt default string =
+  Result.withDefault default (String.toInt string)
 
 -- MODEL
 
 
-type alias Model = Int
+type alias Model = {input: Int, num: Int}
 
 
 model : Model
 model =
-  0
+  {input = 0, num = 0}
 
 
 
 -- UPDATE
 
 
-type Msg
-  = Increment
-  | Decrement
+type Msg = IncrementNum Int
+  | DecrementNum Int
+  | SetNum Int
+  | SetInput String
 
 
 update : Msg -> Model -> Model
 update msg model =
   case msg of
-    Increment ->
-      model + 1
+    IncrementNum i ->
+      {model | num = model.num + i}
 
-    Decrement ->
-      model - 1
+    DecrementNum i ->
+      {model | num = model.num - i}
 
+    SetNum i ->
+      {model | num = i}
+
+    SetInput s ->
+      {model | input = toDefaultInt model.input s}
 
 
 -- VIEW
@@ -50,7 +59,13 @@ update msg model =
 view : Model -> Html Msg
 view model =
   div []
-    [ button [ onClick Decrement ] [ text "-" ]
+    [ button [ onClick (DecrementNum 1) ] [ text "-" ]
+    , button [ onClick (IncrementNum 1) ] [ text "+" ]
+    , button [ onClick (SetNum 0) ] [ text "Reset" ]
+    , br [] []
+    , input [ placeholder "Enter a value to set me", onInput SetInput ] []
+    , button [ onClick (SetNum model.input) ] [ text "Set" ]
+    , h1 [] [ text ("The Number: " ++ toString model.num) ]
     , div [] [ text (toString model) ]
-    , button [ onClick Increment ] [ text "+" ]
     ]
+
